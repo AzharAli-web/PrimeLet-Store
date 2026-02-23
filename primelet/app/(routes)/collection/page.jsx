@@ -1,7 +1,6 @@
 "use client";
 import Item from '@/app/(components)/Item';
 import { useAppContext } from '@/app/(context)/AppContext'
-import { categories } from '@/public/data';
 import { useSearchParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 
@@ -79,7 +78,7 @@ const Collection = () => {
                         <h5 className='mb-4'>Sort By Price</h5>
                         <select value={sort} onChange={(e) => setSort(e.target.value)} className='border border-slate-900/10 outline-none text-sm text-gray-500 font-medium h-8 w-full px-2 rounded-md'>
                             <option value="relevant">Relevant</option>
-                            <option value="Low">Low to High</option>
+                            <option value="low">Low to High</option>
                             <option value="high">High to Low</option>
                         </select>
                     </div >
@@ -158,10 +157,6 @@ const Collection = () => {
     </PaginationContent>
   </Pagination>
 )}
-
-
-
-
                 </div>
 
             </div>
