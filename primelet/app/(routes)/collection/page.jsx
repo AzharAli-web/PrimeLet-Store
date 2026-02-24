@@ -177,8 +177,6 @@
 
 
 
-
-
 "use client";
 export const dynamic = "force-dynamic";
 
@@ -196,28 +194,31 @@ import {
 } from "@/components/ui/pagination";
 
 const Collection = () => {
-  const {
-    products = [],
-    categories = [],
-    searchQuery,
-    setSearchQuery,
-    selectedCategory,
-    setSelectedCategory,
-  } = useAppContext();
+  const { products = [], categories = [], searchQuery, setSearchQuery, selectedCategory, setSelectedCategory } = useAppContext();
 
   const [sort, setSort] = useState("relevant");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
   const searchParams = useSearchParams();
 
+  // Read params
+  const search = searchParams.get("search") || "";
+  const category = searchParams.get("category") || "";
+
+  // Sync with context whenever search/category changes
+  useEffect(() => {
+    setSearchQuery(search);
+    setSelectedCategory(category);
+    setCurrentPage(1);
+  }, [search, category, setSearchQuery, setSelectedCategory]);
+
   // Filter
-  let filteredProducts = products;
+  let filteredProducts = [...products];
   if (searchQuery) {
     const lowerQuery = searchQuery.toLowerCase();
     filteredProducts = filteredProducts.filter(
-      (p) =>
-        p.name?.toLowerCase().includes(lowerQuery) ||
-        p.description?.toLowerCase().includes(lowerQuery)
+      (p) => p.name?.toLowerCase().includes(lowerQuery) || p.description?.toLowerCase().includes(lowerQuery)
     );
   }
   if (selectedCategory) {
@@ -237,15 +238,6 @@ const Collection = () => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentProducts = sortedProducts.slice(indexOfFirstItem, indexOfLastItem);
 
-  // Sync filters from URL
-  useEffect(() => {
-    const search = searchParams.get("search") || "";
-    const category = searchParams.get("category") || "";
-    setSearchQuery(search);
-    setSelectedCategory(category);
-    setCurrentPage(1);
-  }, [searchParams, setSearchQuery, setSelectedCategory]);
-
   const handleCategoryChange = (categoryName, checked) => {
     setSelectedCategory(checked ? categoryName : "");
     setCurrentPage(1);
@@ -254,6 +246,7 @@ const Collection = () => {
   return (
     <div className="max-padd-container px-0! mt-4">
       <div className="flex flex-col sm:flex-row gap-6 mb-16">
+        {/* Filters */}
         <div className="min-w-64 bg-secondary p-4 pl-6 rounded-r-xl sm:h-screen rounded-xl">
           <div className="px-4 py-3 mt-2 bg-white rounded-xl">
             <h5 className="mb-4">Sort By Price</h5>
@@ -285,6 +278,7 @@ const Collection = () => {
           </div>
         </div>
 
+        {/* Product Grid */}
         <div className="max-sm:px-10 pr-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
             {currentProducts.length > 0
@@ -292,6 +286,7 @@ const Collection = () => {
               : <p className="capitalize">No Products Found.</p>}
           </div>
 
+          {/* Pagination */}
           {totalPages > 1 && (
             <Pagination className="mt-12">
               <PaginationContent>
