@@ -182,10 +182,10 @@
 "use client";
 export const dynamic = "force-dynamic";
 
-import React, { useState, useEffect } from 'react';
-import Item from '@/app/(components)/Item';
-import { useAppContext } from '@/app/(context)/AppContext';
-import { useSearchParams } from 'next/navigation';
+import React, { useState, useEffect } from "react";
+import Item from "@/app/(components)/Item";
+import { useAppContext } from "@/app/(context)/AppContext";
+import { useSearchParams } from "next/navigation";
 import {
   Pagination,
   PaginationContent,
@@ -196,24 +196,34 @@ import {
 } from "@/components/ui/pagination";
 
 const Collection = () => {
-  const { products = [], categories = [], searchQuery, setSearchQuery, selectedCategory, setSelectedCategory } = useAppContext();
+  const {
+    products = [],
+    categories = [],
+    searchQuery,
+    setSearchQuery,
+    selectedCategory,
+    setSelectedCategory,
+  } = useAppContext();
+
   const [sort, setSort] = useState("relevant");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const searchParams = useSearchParams();
 
-  // Filtered products
+  // Filter
   let filteredProducts = products;
-
   if (searchQuery) {
     const lowerQuery = searchQuery.toLowerCase();
-    filteredProducts = filteredProducts.filter(p => 
-      (p.name?.toLowerCase().includes(lowerQuery) || p.description?.toLowerCase().includes(lowerQuery))
+    filteredProducts = filteredProducts.filter(
+      (p) =>
+        p.name?.toLowerCase().includes(lowerQuery) ||
+        p.description?.toLowerCase().includes(lowerQuery)
     );
   }
-
   if (selectedCategory) {
-    filteredProducts = filteredProducts.filter(p => p.categories?.[0]?.name === selectedCategory);
+    filteredProducts = filteredProducts.filter(
+      (p) => p.categories?.[0]?.name === selectedCategory
+    );
   }
 
   // Sort
@@ -227,7 +237,7 @@ const Collection = () => {
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentProducts = sortedProducts.slice(indexOfFirstItem, indexOfLastItem);
 
-  // Update filters from URL
+  // Sync filters from URL
   useEffect(() => {
     const search = searchParams.get("search") || "";
     const category = searchParams.get("category") || "";
@@ -242,26 +252,32 @@ const Collection = () => {
   };
 
   return (
-    <div className='max-padd-container px-0! mt-4'>
-      <div className='flex flex-col sm:flex-row gap-6 mb-16'>
-        <div className='min-w-64 bg-secondary p-4 pl-6 rounded-r-xl sm:h-screen rounded-xl'>
-          {/* Sort */}
-          <div className='px-4 py-3 mt-2 bg-white rounded-xl'>
-            <h5 className='mb-4'>Sort By Price</h5>
-            <select value={sort} onChange={e => setSort(e.target.value)} className='border border-slate-900/10 outline-none text-sm text-gray-500 font-medium h-8 w-full px-2 rounded-md'>
+    <div className="max-padd-container px-0! mt-4">
+      <div className="flex flex-col sm:flex-row gap-6 mb-16">
+        <div className="min-w-64 bg-secondary p-4 pl-6 rounded-r-xl sm:h-screen rounded-xl">
+          <div className="px-4 py-3 mt-2 bg-white rounded-xl">
+            <h5 className="mb-4">Sort By Price</h5>
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              className="border border-slate-900/10 outline-none text-sm text-gray-500 font-medium h-8 w-full px-2 rounded-md"
+            >
               <option value="relevant">Relevant</option>
               <option value="low">Low to High</option>
               <option value="high">High to Low</option>
             </select>
           </div>
 
-          {/* Categories */}
-          <div className='pl-5 py-3 mt-4 bg-white rounded-xl'>
-            <h5 className='mb-4'>Categories</h5>
-            <div className='flex flex-col gap-2 text-sm font-light'>
+          <div className="pl-5 py-3 mt-4 bg-white rounded-xl">
+            <h5 className="mb-4">Categories</h5>
+            <div className="flex flex-col gap-2 text-sm font-light">
               {categories.map((cat, i) => (
-                <label key={i} className='flex gap-2 font-semibold text-gray-500'>
-                  <input type='checkbox' checked={selectedCategory === cat.name} onChange={e => handleCategoryChange(cat.name, e.target.checked)} />
+                <label key={i} className="flex gap-2 font-semibold text-gray-500">
+                  <input
+                    type="checkbox"
+                    checked={selectedCategory === cat.name}
+                    onChange={(e) => handleCategoryChange(cat.name, e.target.checked)}
+                  />
                   {cat.name}
                 </label>
               ))}
@@ -269,31 +285,47 @@ const Collection = () => {
           </div>
         </div>
 
-        {/* Products */}
-        <div className='max-sm:px-10 pr-6'>
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5'>
+        <div className="max-sm:px-10 pr-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
             {currentProducts.length > 0
-              ? currentProducts.map(p => <Item key={p.id} product={p} />)
-              : <p className='capitalize'>No Products Found.</p>
-            }
+              ? currentProducts.map((p) => <Item key={p.id} product={p} />)
+              : <p className="capitalize">No Products Found.</p>}
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <Pagination className="mt-12">
               <PaginationContent>
                 <PaginationItem>
-                  <PaginationPrevious href="#" onClick={e => { e.preventDefault(); if(currentPage>1)setCurrentPage(currentPage-1) }} />
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage > 1) setCurrentPage(currentPage - 1);
+                    }}
+                  />
                 </PaginationItem>
-                {Array.from({length: totalPages}, (_, i) => (
+                {Array.from({ length: totalPages }, (_, i) => (
                   <PaginationItem key={i}>
-                    <PaginationLink href="#" isActive={currentPage === i+1} onClick={e => { e.preventDefault(); setCurrentPage(i+1) }}>
-                      {i+1}
+                    <PaginationLink
+                      href="#"
+                      isActive={currentPage === i + 1}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setCurrentPage(i + 1);
+                      }}
+                    >
+                      {i + 1}
                     </PaginationLink>
                   </PaginationItem>
                 ))}
                 <PaginationItem>
-                  <PaginationNext href="#" onClick={e => { e.preventDefault(); if(currentPage<totalPages)setCurrentPage(currentPage+1) }} />
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                    }}
+                  />
                 </PaginationItem>
               </PaginationContent>
             </Pagination>
