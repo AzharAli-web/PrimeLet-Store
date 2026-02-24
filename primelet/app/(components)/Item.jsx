@@ -71,7 +71,7 @@
 
 
 
-
+"use client"
 import React, { useState } from 'react'
 import { useAppContext } from '../(context)/AppContext'
 import Image from 'next/image'
