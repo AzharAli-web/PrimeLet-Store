@@ -263,7 +263,8 @@
 
 
 
-"use client";
+"use client"; // MUST BE FIRST LINE
+export const dynamic = "force-dynamic";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";

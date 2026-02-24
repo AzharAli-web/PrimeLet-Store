@@ -114,7 +114,8 @@
 
 
 
-"use client";
+"use client"; // MUST BE FIRST LINE
+export const dynamic = "force-dynamic";
 
 import React, { useState } from "react";
 import { useAppContext } from "../(context)/AppContext";
