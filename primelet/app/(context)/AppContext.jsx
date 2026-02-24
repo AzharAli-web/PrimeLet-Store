@@ -261,15 +261,12 @@
 
 
 
-
-
-"use client"; // MUST BE FIRST LINE
-export const dynamic = "force-dynamic";
+"use client"; // MUST BE FIRST
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import axios from "axios";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 axios.defaults.baseURL = process.env.NEXT_PUBLIC_BACKEND_URL || "";
 
@@ -277,93 +274,93 @@ const AppContext = createContext();
 
 const AppContextProvider = ({ children }) => {
   const currency = "$";
-  const router = useRouter();
-  const [subTotal, setSubTotal] = useState(0)
   const [user, setUser] = useState(null);
+  const [subTotal, setSubTotal] = useState(0)
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [cartItems, setCartItems] = useState([]);
-  const [loadingItemId, setLoadingItemId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [loadingItemId, setLoadingItemId] = useState(null);
+
+  const router = useRouter();
 
   // Fetch categories
   const getCategories = async () => {
     try {
       const res = await axios.get("/api/categories");
-      if (res?.data?.data) setCategories(res.data.data);
+      setCategories(res.data?.data || []);
     } catch (err) {
-      console.log("getCategories error", err);
+      console.log("getCategories error:", err.message);
     }
   };
 
   // Fetch products
   const getProducts = async () => {
     try {
-      const res = await axios.get(
-        "/api/products?populate=*&pagination[pageSize]=100"
-      );
-      if (res?.data?.data) setProducts(res.data.data);
+      const res = await axios.get("/api/products?populate=*&pagination[pageSize]=100");
+      setProducts(res.data?.data || []);
     } catch (err) {
-      console.log("getProducts error", err);
+      console.log("getProducts error:", err.message);
     }
   };
 
-  // Register / Login
+  // Auth functions
   const registerUser = async (username, email, password) => {
     try {
-      const res = await axios.post("/api/auth/local/register", {
-        username,
-        email,
-        password,
-      });
+      const res = await axios.post("/api/auth/local/register", { username, email, password });
       return res.data;
     } catch (err) {
-      console.log("registerUser error", err);
+      console.log("registerUser error:", err.message);
     }
   };
 
   const loginUser = async (email, password) => {
     try {
-      const res = await axios.post("/api/auth/local", {
-        identifier: email,
-        password,
-      });
+      const res = await axios.post("/api/auth/local", { identifier: email, password });
       return res.data;
     } catch (err) {
-      console.log("loginUser error", err);
+      console.log("loginUser error:", err.message);
     }
   };
 
   const logout = async () => {
-    if (typeof window !== "undefined") sessionStorage.clear();
+    sessionStorage.clear();
     setUser(null);
     router.push("/sign-in");
   };
 
   // CART FUNCTIONS
-  const fetchCartItems = async () => {
-    if (!user?.id || typeof window === "undefined") return [];
+  const addToCart = async (data) => {
     const jwt = sessionStorage.getItem("jwt");
-    if (!jwt) return [];
-
+    if (!jwt) return null;
     try {
-      const res = await axios.get(
-        `/api/carts?filters[userid][$eq]=${user.id}&populate=products.images`,
-        { headers: { Authorization: `Bearer ${jwt}` } }
-      );
-      return res?.data?.data?.map((item) => ({
-        id: item?.documentId,
-        name: item?.products?.[0]?.name || "",
-        quantity: item?.quantity || 0,
-        amount: item?.amount || 0,
-        image: item?.products?.[0]?.images?.[0]?.url || "",
-        price: item?.products?.[0]?.price || 0,
-        offerPrice: item?.products?.[0]?.offerprice || 0,
-        product: item?.products?.[0]?.id || null,
-      })) || [];
+      await axios.post("/api/carts", data, { headers: { Authorization: `Bearer ${jwt}` } });
+      await refreshCart();
     } catch (err) {
-      console.log("fetchCartItems error", err);
+      console.log("addToCart error:", err.message);
+    }
+  };
+
+  const fetchCartItems = async () => {
+    const jwt = sessionStorage.getItem("jwt");
+    if (!user?.id || !jwt) return [];
+    try {
+      const res = await axios.get(`/api/carts?filters[userid][$eq]=${user.id}&populate=products.images`, {
+        headers: { Authorization: `Bearer ${jwt}` },
+      });
+      return res.data.data.map((item) => ({
+        id: item.documentId,
+        name: item.products[0]?.name,
+        quantity: item.quantity,
+        amount: item.amount,
+        image: item.products[0]?.images?.[0]?.url,
+        price: item.products[0]?.price,
+        offerPrice: item.products[0]?.offerprice,
+        product: item.products[0]?.id,
+      }));
+    } catch (err) {
+      console.log("fetchCartItems error:", err.message);
       return [];
     }
   };
@@ -373,88 +370,27 @@ const AppContextProvider = ({ children }) => {
     setCartItems(items);
   };
 
-  const addToCart = async (data) => {
-    if (typeof window === "undefined") return null;
-    const jwt = sessionStorage.getItem("jwt");
-    if (!jwt) return null;
-    try {
-      const res = await axios.post("/api/carts", data, {
-        headers: { Authorization: `Bearer ${jwt}` },
-      });
-      await refreshCart();
-      return res;
-    } catch (err) {
-      console.log("addToCart error", err);
-      return null;
-    }
-  };
-
   const removeFromCart = async (id) => {
     setLoadingItemId(id);
-    if (!id || typeof window === "undefined") return;
     const jwt = sessionStorage.getItem("jwt");
-    if (!jwt) return;
-
+    if (!id || !jwt) return;
     try {
-      await axios.delete(`/api/carts/${id}`, {
-        headers: { Authorization: `Bearer ${jwt}` },
-      });
+      await axios.delete(`/api/carts/${id}`, { headers: { Authorization: `Bearer ${jwt}` } });
       await refreshCart();
-      toast.success("Removed from Cart");
+      toast.success("Removed from cart");
     } catch (err) {
-      console.log("removeFromCart error", err);
+      console.log("removeFromCart error:", err.message);
     } finally {
       setLoadingItemId(null);
     }
   };
 
-  const createOrder = async (payload) => {
-    if (!payload || typeof window === "undefined") return null;
-    const jwt = sessionStorage.getItem("jwt");
-    if (!jwt) return null;
-
-    try {
-      const res = await axios.post("/api/orders", payload, {
-        headers: { Authorization: `Bearer ${jwt}` },
-      });
-      if (res?.status >= 200 && res?.status < 300) {
-        toast.success("Order placed successfully");
-        for (const item of cartItems) await removeFromCart(item.id);
-        setCartItems([]);
-        router.replace("/my-orders");
-        return res.data;
-      }
-    } catch (err) {
-      toast.error("Error placing order");
-      console.log("createOrder error", err);
-    }
-  };
-
-  const getMyOrders = async () => {
-    if (!user?.id || typeof window === "undefined") return [];
-    const jwt = sessionStorage.getItem("jwt");
-    if (!jwt) return [];
-
-    try {
-      const res = await axios.get(
-        `/api/orders?filters[userid][$eq]=${user.id}&populate=orderedItems.product.images`,
-        { headers: { Authorization: `Bearer ${jwt}` } }
-      );
-      return res?.data?.data || [];
-    } catch (err) {
-      console.log("getMyOrders error", err);
-      return [];
-    }
-  };
-
-  // Load user and data on mount
+  // INITIAL LOAD
   useEffect(() => {
     getCategories();
     getProducts();
-    if (typeof window !== "undefined") {
-      const storedUser = sessionStorage.getItem("user");
-      if (storedUser) setUser(JSON.parse(storedUser));
-    }
+    const storedUser = sessionStorage.getItem("user");
+    if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
   useEffect(() => {
@@ -462,35 +398,29 @@ const AppContextProvider = ({ children }) => {
     else setCartItems([]);
   }, [user]);
 
-  return (
-    <AppContext.Provider
-      value={{
-        currency,
-        user,
-        setUser,
-        categories,
-        products,
-        cartItems,
-        setCartItems,
-        loadingItemId,
-        subTotal, setSubTotal,
-        searchQuery,
-        setSearchQuery,
-        selectedCategory,
-        setSelectedCategory,
-        registerUser,
-        loginUser,
-        logout,
-        addToCart,
-        removeFromCart,
-        refreshCart,
-        createOrder,
-        getMyOrders,
-      }}
-    >
-      {children}
-    </AppContext.Provider>
-  );
+  const value = {
+    currency,
+    products,
+    categories,
+    cartItems,
+    setCartItems,
+    user,
+    setUser,
+    subTotal, setSubTotal,
+    searchQuery,
+    setSearchQuery,
+    selectedCategory,
+    setSelectedCategory,
+    addToCart,
+    removeFromCart,
+    loadingItemId,
+    logout,
+    registerUser,
+    loginUser,
+    refreshCart,
+  };
+
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 
 export default AppContextProvider;

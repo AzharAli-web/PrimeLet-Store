@@ -112,10 +112,7 @@
 
 
 
-
-
-"use client"; // MUST BE FIRST LINE
-export const dynamic = "force-dynamic";
+"use client";
 
 import React, { useState } from "react";
 import { useAppContext } from "../(context)/AppContext";
@@ -145,48 +142,32 @@ const Item = ({ product }) => {
           <div className="flexCenter p-3 bg-[#f5f5f5] overflow-hidden">
             <Image
               src={
-                hovered
-                  ? process.env.NEXT_PUBLIC_BACKEND_URL +
-                    (product.images?.[1]?.url || product.images?.[0]?.url || "")
-                  : process.env.NEXT_PUBLIC_BACKEND_URL + (product.images?.[0]?.url || "")
+                product.images.length > 1 && hovered
+                  ? process.env.NEXT_PUBLIC_BACKEND_URL + product.images[1].url
+                  : process.env.NEXT_PUBLIC_BACKEND_URL + product.images[0].url
               }
-              alt={product.name || ""}
-              width={555}
+              alt={product.name}
               height={555}
+              width={555}
               className="transition-transform duration-300 hover:scale-105"
               unoptimized
             />
           </div>
 
           <div className="p-3">
-            <h5 className="line-clamp-1 text-base font-bold tracking-wide text-gray-900">
-              {product.name || ""}
-            </h5>
+            <h5 className="line-clamp-1 text-base font-bold tracking-wide text-gray-900">{product.name}</h5>
 
             <div className="flexBetween pt-1">
-              <p className="text-sm font-semibold text-gray-600">
-                {product.categories?.[0]?.name || "Uncategorized"}
-              </p>
-
+              <p className="text-sm font-semibold text-gray-600">{product.categories[0]?.name}</p>
               <h5 className="font-semibold">
-                <span
-                  className={`${product.offerPrice && "line-through"} text-gray-400 pr-1`}
-                >
-                  {currency}
-                  {product.price || 0}
+                <span className={`${product.offerPrice && "line-through"} text-gray-400 pr-1`}>
+                  {currency}{product.price}
                 </span>
-                {product.offerPrice && (
-                  <span className="text-black font-bold">
-                    {currency}
-                    {product.offerPrice}
-                  </span>
-                )}
+                {product.offerPrice && <span className="text-black font-bold">{currency}{product.offerPrice}</span>}
               </h5>
             </div>
 
-            <p className="mt-2 text-sm text-gray-500 leading-relaxed line-clamp-2 min-h-[40px]">
-              {product.description || ""}
-            </p>
+            <p className="mt-2 text-sm text-gray-500 leading-relaxed line-clamp-2 min-h-[40px]">{product.description}</p>
           </div>
         </div>
       </DialogTrigger>

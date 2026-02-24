@@ -177,6 +177,8 @@
 
 
 
+
+
 "use client";
 export const dynamic = "force-dynamic";
 
@@ -201,45 +203,40 @@ const Collection = () => {
   const itemsPerPage = 10;
 
   const searchParams = useSearchParams();
-
-  // Read params
   const search = searchParams.get("search") || "";
   const category = searchParams.get("category") || "";
 
-  // Sync with context whenever search/category changes
   useEffect(() => {
     setSearchQuery(search);
     setSelectedCategory(category);
     setCurrentPage(1);
   }, [search, category, setSearchQuery, setSelectedCategory]);
 
-  // Filter
+  // FILTER
   let filteredProducts = [...products];
   if (searchQuery) {
-    const lowerQuery = searchQuery.toLowerCase();
+    const lower = searchQuery.toLowerCase();
     filteredProducts = filteredProducts.filter(
-      (p) => p.name?.toLowerCase().includes(lowerQuery) || p.description?.toLowerCase().includes(lowerQuery)
+      (p) => p.name?.toLowerCase().includes(lower) || p.description?.toLowerCase().includes(lower)
     );
   }
   if (selectedCategory) {
-    filteredProducts = filteredProducts.filter(
-      (p) => p.categories?.[0]?.name === selectedCategory
-    );
+    filteredProducts = filteredProducts.filter((p) => p.categories?.[0]?.name === selectedCategory);
   }
 
-  // Sort
+  // SORT
   let sortedProducts = [...filteredProducts];
   if (sort === "low") sortedProducts.sort((a, b) => (a.price || 0) - (b.price || 0));
   if (sort === "high") sortedProducts.sort((a, b) => (b.price || 0) - (a.price || 0));
 
-  // Pagination
+  // PAGINATION
   const totalPages = Math.ceil(sortedProducts.length / itemsPerPage);
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentProducts = sortedProducts.slice(indexOfFirstItem, indexOfLastItem);
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const currentProducts = sortedProducts.slice(indexOfFirst, indexOfLast);
 
-  const handleCategoryChange = (categoryName, checked) => {
-    setSelectedCategory(checked ? categoryName : "");
+  const handleCategoryChange = (catName, checked) => {
+    setSelectedCategory(checked ? catName : "");
     setCurrentPage(1);
   };
 
