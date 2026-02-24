@@ -17,14 +17,16 @@ import {
 
 
 const Collection = () => {
-    const { products, categories, searchQuery, setSearchQuery, selectedCategory, setSelectedCategory } = useAppContext();
+    const { products, categories, searchQuery,
+    setSearchQuery, selectedCategory, setSelectedCategory } = useAppContext();
     const [sort, setSort] = useState("relevant")
     const [currentPage, setCurrentPage] = useState(1)
     const itemsPerPage = 10;
     const searchParams = useSearchParams()
 
     //compute filtered and sorted products
-    let filteredProducts = products
+    // let filteredProducts = products
+    let filteredProducts = products || []
 
     //Search wiery filter
     if (searchQuery) {
@@ -34,7 +36,10 @@ const Collection = () => {
 
     //Category Filters.
     if (selectedCategory) {
-        filteredProducts = filteredProducts.filter((product) => product.categories[0]?.name === selectedCategory)
+        // filteredProducts = filteredProducts.filter((product) => product.categories[0]?.name === selectedCategory)
+        filteredProducts = filteredProducts.filter(
+  (product) => product.categories?.[0]?.name === selectedCategory
+)
     }
 
     //Sort Products
