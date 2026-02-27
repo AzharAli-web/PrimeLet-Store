@@ -86,5 +86,4 @@ const Cart = () => {
         </Sheet>
     )
 }
-
 export default Cart
